@@ -1,0 +1,79 @@
+---
+title: "Untitled"
+author: "Will Ball"
+date: "14/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(scipen = 999)
+
+theme_set(theme_dag())
+```
+
+
+## Libraries
+
+```{r libraries, message = FALSE, warning = FALSE}
+devtools::install_github("malcolmbarrett/ggdag")
+
+library(tidyverse)
+library(dagitty)
+library(ggdag)
+```
+
+
+## Build DAG
+
+Exposure:
+Area Deprivation (x)
+
+Outcome:
+COVID Outcomes (y)
+
+Covariates:
+Age (z1)
+Comorbidities (z2)
+Sex (z3)
+Urban/Rural Classification (z4)
+Ethnicity (u1)
+
+```{r data, message = FALSE, warning = FALSE}
+covid_dag <- dagify(
+  y ~ x + z1 + z2 + z3 + z4 + u1,
+  x ~ z1 + z2 + z4,
+  z2 ~ z1 + z3,
+  z4 ~ z1,
+  exposure = "x",
+  outcome = "y",
+  latent = "u1",
+  labels = c("y" = "COVID\nOutcomes",
+             "x" = "Area\nDeprivation",
+             "z1" = "Age",
+             "z2" = "Comorbidities",
+             "z3" = "Sex",
+             "z4" = "Urban/\nRural",
+             "u1" = "Ethnicity")
+)
+
+covid_dag <- tidy_dagitty(covid_dag) %>% 
+  mutate(colour = case_when(
+    name == "x"                                                 ~ "exposure",
+    name == "y"                                                 ~ "outcome",
+    name == "u1"                                                ~ "unmeasured",
+    name == "z1" | name == "z2" | name == "z3" | name == "z4"   ~ "covariate"
+  ))
+```
+
+## Draw DAGs
+
+```{r}
+ggdag(covid_dag, text = F, use_labels = "label") +
+  geom_dag_point(aes(colour = colour)) +
+  theme(legend.title = element_blank())
+
+ggdag_adjustment_set(covid_dag, text = F, use_labels = "label")
+```
+
