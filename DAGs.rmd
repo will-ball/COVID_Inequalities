@@ -9,8 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 options(scipen = 999)
-
-theme_set(theme_dag())
 ```
 
 
@@ -22,8 +20,9 @@ devtools::install_github("malcolmbarrett/ggdag")
 library(tidyverse)
 library(dagitty)
 library(ggdag)
-```
 
+theme_set(theme_dag())
+```
 
 ## Build DAG
 
@@ -71,7 +70,7 @@ covid_dag <- tidy_dagitty(covid_dag) %>%
 
 ```{r}
 (p1 <- ggdag(covid_dag, text = F, use_labels = "label") +
-  geom_dag_point(aes(colour = colour)) +
+ # geom_dag_point(aes(colour = colour)) +
   theme(legend.title = element_blank()) +
   ggtitle("SIMD -> COVID Outcomes DAG v1")
 )
